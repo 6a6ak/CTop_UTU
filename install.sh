@@ -1,24 +1,36 @@
 #!/usr/bin/env bash
 
-# install docker-ctop on Ubuntu/Debian
-
 set -e
 
-echo "[+] Installing dependencies..."
-sudo apt update
-sudo apt install -y ca-certificates curl gnupg lsb-release
+VERSION="0.7.7"
 
-echo "[+] Adding ctop repository key..."
-echo 'deb [trusted=yes] https://azlux.fr/repo/ stable main' | \
-sudo tee /etc/apt/sources.list.d/azlux.list > /dev/null
+echo "[+] Detecting architecture..."
 
-echo "[+] Updating package list..."
-sudo apt update
+ARCH=$(uname -m)
 
-echo "[+] Installing ctop..."
-sudo apt install -y docker-ctop
+case $ARCH in
+    x86_64)
+        FILE="ctop-${VERSION}-linux-amd64"
+        ;;
+    aarch64|arm64)
+        FILE="ctop-${VERSION}-linux-arm64"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+        ;;
+esac
 
+echo "[+] Downloading ctop..."
+curl -Lo ctop \
+https://github.com/bcicen/ctop/releases/download/v${VERSION}/${FILE}
+
+chmod +x ctop
+
+echo "[+] Installing to /usr/local/bin..."
+sudo mv ctop /usr/local/bin/ctop
+
+echo "[+] Installed successfully"
 echo
-echo "[+] Done."
-echo "[+] Run with:"
+echo "Run with:"
 echo "ctop"
